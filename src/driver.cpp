@@ -101,34 +101,35 @@ int main(){
 
     // Listen for messages from the server
     while(true){
-        auto bytes_received                   = recv(driver.socket_fd, driver.receive_buffer, asgard::buffer_size, 0);
-        driver.receive_buffer[bytes_received] = '\0';
+        if(asgard::receive_message(driver.socket_fd, driver.receive_buffer, asgard::buffer_size)){
+            std::string message(driver.receive_buffer);
+            std::stringstream message_ss(message);
 
-        std::string message(driver.receive_buffer);
-        std::stringstream message_ss(message);
+            std::string command;
+            message_ss >> command;
 
-        std::string command;
-        message_ss >> command;
+            if(command == "ACTION"){
+                std::string action;
+                message_ss >> action;
+                if(action == "on"){
+                    std::string value;
+                    message_ss >> value;
+                    std::cout << "asgard:itt-1500: On Unit " << value << std::endl;
 
-        if(command == "ACTION"){
-            std::string action;
-            message_ss >> action;
-            if(action == "on"){
-                std::string value;
-                message_ss >> value;
-                std::cout << "asgard:itt-1500: On Unit " << value << std::endl;
+                    auto result = command_result(bin + " -i " + id + " -u " + value + " -t");
+                    std::cout << "asgard:itt-1500: result: " << result << std::endl;
+                } else if(action == "off"){
+                    std::string value;
+                    message_ss >> value;
+                    std::cout << "asgard:itt-1500: Off Unit " << value << std::endl;
 
-                auto result = command_result(bin + " -i " + id + " -u " + value + " -t");
-                std::cout << "asgard:itt-1500: result: " << result << std::endl;
-            } else if(action == "off"){
-                std::string value;
-                message_ss >> value;
-                std::cout << "asgard:itt-1500: Off Unit " << value << std::endl;
-
-                auto result = command_result(bin + " -i " + id + " -u " + value + " -f");
-                std::cout << "asgard:itt-1500: result: " << result << std::endl;
+                    auto result = command_result(bin + " -i " + id + " -u " + value + " -f");
+                    std::cout << "asgard:itt-1500: result: " << result << std::endl;
+                } else {
+                    std::cout << "asgard:itt-1500: Unknown action " << action << std::endl;
+                }
             } else {
-                std::cout << "asgard:itt-1500: Unknown action " << action << std::endl;
+                std::cout << "asgard:itt-1500: Unknown command " << command << std::endl;
             }
         }
     }
