@@ -37,6 +37,34 @@ void terminate(int){
     std::exit(0);
 }
 
+std::string command_result(const std::string& command) {
+    std::stringstream output;
+
+    char buffer[1024];
+
+    FILE* stream = popen(command.c_str(), "r");
+
+    if (!stream) {
+        return {};
+    }
+
+    while (fgets(buffer, 1024, stream) != nullptr) {
+        output << buffer;
+    }
+
+    if (pclose(stream)) {
+        return {};
+    }
+
+    std::string out(output.str());
+
+    if (out[out.size() - 1] == '\n') {
+        return {out.begin(), out.end() - 1};
+    }
+
+    return out;
+}
+
 } //End of anonymous namespace
 
 int main(){
@@ -47,6 +75,13 @@ int main(){
 
     if(bin.empty()){
         std::cout << "asgard:itt-1500: The path to the itt_1500_send utiltiy is not set" << std::endl;
+        return 1;
+    }
+
+    auto id = asgard::get_string_value(config, "itt_1500_id");
+
+    if(id.empty()){
+        std::cout << "asgard:itt-1500: The ITT-1500 ID is not set" << std::endl;
         return 1;
     }
 
@@ -83,13 +118,15 @@ int main(){
                 message_ss >> value;
                 std::cout << "asgard:itt-1500: On Unit " << value << std::endl;
 
-                //TODO
+                auto result = command_result(bin + " -i " + id + " -u " + value + " -t");
+                std::cout << "asgard:itt-1500: result: " << result << std::endl;
             } else if(action == "off"){
                 std::string value;
                 message_ss >> value;
                 std::cout << "asgard:itt-1500: Off Unit " << value << std::endl;
 
-                //TODO
+                auto result = command_result(bin + " -i " + id + " -u " + value + " -f");
+                std::cout << "asgard:itt-1500: result: " << result << std::endl;
             } else {
                 std::cout << "asgard:itt-1500: Unknown action " << action << std::endl;
             }
