@@ -43,7 +43,7 @@ int main(){
     // Load the configuration file
     asgard::load_config(config);
 
-    auto bin = asgard::get_string_value("itt_1500_send_path");
+    auto bin = asgard::get_string_value(config, "itt_1500_send_path");
 
     if(bin.empty()){
         std::cout << "asgard:itt-1500: The path to the itt_1500_send utiltiy is not set" << std::endl;
